@@ -46,7 +46,7 @@ model Tweet{
   tweetId      Int      @id @default(autoincrement())
   image String?
   content String
-  imporession Int @default(0)
+  impression Int @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime @default(now())
