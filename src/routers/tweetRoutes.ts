@@ -1,28 +1,107 @@
 import { Request, Response, Router } from "express";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const router = Router();
 
-// Get All user
+// Get All Tweet
 router.get("/", async (req, res) => {
-  res.send("tweets route");
+  try {
+    const findAll = await prisma.tweet.findMany({
+      include: {
+        user: true,
+        // select within include
+        // user: {
+        //   select: {
+        //     userId: true,
+        //   },
+        // },
+      },
+    });
+    res.status(200).json(findAll);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json("Failed to get tweet data");
+  }
 });
 
-// Get One user
+// Get One Tweet
 
 router.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
+  try {
+    const findOne = await prisma.tweet.findFirst({
+      where: { tweetId: Number(id) },
+      include: {
+        user: true,
+      },
+    });
+    if (!findOne) {
+      res.status(404).json("Cannot find tweet");
+    }
+    res.status(200).json(findOne);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json("Failed to get one tweet data");
+  }
 });
 
-// Update User
+// Create one Tweet
+router.post("/", async (req: Request, res: Response) => {
+  const { image, content, impression, userId } = req.body;
+  try {
+    const params = {
+      image,
+      content,
+      impression,
+      userId,
+    };
+    const createRes = await prisma.tweet.create({
+      data: params,
+    });
+    res.status(201).json(createRes);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json("Failed to create tweet");
+  }
+});
+
+// Update Tweet
 
 router.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
+  const { image, content, impression } = req.body;
+
+  try {
+    const params = {
+      image,
+      content,
+      impression,
+    };
+    const updateRes = await prisma.tweet.update({
+      where: { tweetId: Number(id) },
+      data: params,
+    });
+    res.status(201).json(updateRes);
+  } catch (err) {
+    res.status(400).json("Failed to update tweet");
+  }
 });
 
-// Delete User
+// Delete Tweet
 
 router.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
+
+  try {
+    await prisma.tweet.delete({
+      where: { tweetId: Number(id) },
+    });
+    res.status(201).json("Deleted tweet");
+  } catch (err) {
+    res.status(400).json("Failed to delete tweet");
+  }
 });
 
 export { router as tweetRouter };

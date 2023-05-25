@@ -8,10 +8,16 @@ const router = Router();
 // Get All user
 
 router.get("/", async (req, res) => {
-  const allUser = await prisma.user.findMany();
-
-  // res.json(allUser);
-  res.send(allUser).status(200);
+  try {
+    const allUser = await prisma.user.findMany({
+      include: {
+        tweets: true,
+      },
+    });
+    res.send(allUser).status(200);
+  } catch (err) {
+    res.status(400).json("Failed to get user list");
+  }
 });
 
 // Get One user
@@ -19,10 +25,19 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   try {
-    const findOne = await prisma.user.findUnique({ where: { userId: parseInt(id) } });
+    const findOne = await prisma.user.findUnique({
+      where: { userId: parseInt(id) },
+      include: {
+        tweets: true,
+      },
+    });
+    if (!findOne) {
+      res.status(404).json("Cannot find user");
+    }
     res.json(findOne);
   } catch (err) {
     console.log(err);
+    res.status(400).json("Failed to get one user");
   }
 });
 
