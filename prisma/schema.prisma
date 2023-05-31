@@ -28,14 +28,29 @@ datasource db {
 //   userId Int     @unique
 // }
 
+model Token {
+  tokenId Int @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type String //Email | API
+  emailToken String? @unique
+  valid Boolean @default(true)
+  expiration DateTime
+
+  userId Int
+  user User @relation(fields: [userId], references: [userId])
+}
+
 model User {
   userId      Int      @id @default(autoincrement())
   email   String   @unique
-  username String @unique
+  username String? @unique
   image String?
   bio String?
   isVerified Boolean @default(false)
   tweets Tweet[]
+  token Token[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
