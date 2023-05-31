@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import moment from "moment";
 import { generateAuthToken } from "../helper/authHelper";
+import { sendEmailToken } from "../services/emailServices";
 
 const EMAIL_TOKEN_EXPIRATION_MINUTES = 10;
 const AUTHENTICATION_EXPIRATION_HOURS = 12;
@@ -40,7 +41,9 @@ router.post("/login", async (req, res) => {
 
     // TODO send emailToken to user's email
     //   await sendEmailToken(email, emailToken);
-    res.sendStatus(200);
+
+    await sendEmailToken(email, emailToken);
+    res.status(200).send(`Email has been sent to ${email}`);
   } catch (err) {
     console.log(err);
     res.status(400).json({ error: "Couldn't start the authentication process" });
