@@ -1,5 +1,5 @@
 import { Request, Response, Router } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, User } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -48,14 +48,17 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // Create one Tweet
-router.post("/", async (req: Request, res: Response) => {
-  const { image, content, impression, userId } = req.body;
+router.post("/", async (req: Request & { user?: User }, res: Response) => {
+  const { image, content, impression } = req.body;
+
+  const user = req.user;
+
   try {
     const params = {
       image,
       content,
       impression,
-      userId,
+      userId: user!.userId,
     };
     const createRes = await prisma.tweet.create({
       data: params,

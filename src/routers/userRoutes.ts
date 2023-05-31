@@ -85,7 +85,6 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  console.log("delete id", id);
 
   try {
     if (id) {
