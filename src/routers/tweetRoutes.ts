@@ -8,9 +8,10 @@ const router = Router();
 // Get All Tweet
 router.get("/", async (req, res) => {
   try {
-    const findAll = await prisma.tweet.findMany({
+    const findAllTweets = await prisma.tweet.findMany({
       include: {
         user: true,
+        likes: true,
         // select within include
         // user: {
         //   select: {
@@ -19,7 +20,17 @@ router.get("/", async (req, res) => {
         // },
       },
     });
-    res.status(200).json(findAll);
+
+    const newfindAllTweets = findAllTweets.map((tweet) => {
+      const newObj = {
+        count: tweet.likes.length,
+        rows: tweet.likes,
+      };
+
+      return { ...tweet, likes: newObj };
+    });
+
+    res.status(200).json(newfindAllTweets);
   } catch (err) {
     console.log(err);
     res.status(400).json("Failed to get tweet data");
