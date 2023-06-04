@@ -19,8 +19,6 @@ enum AuthProvider {
 
 model Token {
   tokenId Int @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   type String //Email | API
   emailToken String? @unique
@@ -29,6 +27,9 @@ model Token {
 
   userId Int
   user User @relation(fields: [userId], references: [userId])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
@@ -41,6 +42,8 @@ model User {
   tweets Tweet[]
   token Token[]
   UserAuths UserAuth[]
+  likes   Like[]
+  comments       Comment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -65,9 +68,32 @@ model Tweet{
   image String?
   content String
   impression Int @default(0)
+  userId Int
+  user User @relation(fields: [userId], references: [userId])
+  likes   Like[]
+  comments       Comment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime @default(now())
+}
+
+model Like {
+  likeId Int  @id @default(autoincrement())
+  user   User @relation(fields: [userId], references: [userId])
+  tweet  Tweet @relation(fields: [tweetId], references: [tweetId])
   userId Int
-  user User @relation(fields: [userId], references: [userId])
+  tweetId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  commentId         Int       @id @default(autoincrement())
+  comment    String
+  user       User      @relation(fields: [userId], references: [userId])
+  userId     Int
+  tweet      Tweet     @relation(fields: [tweetId], references: [tweetId])
+  tweetId    Int
 }
