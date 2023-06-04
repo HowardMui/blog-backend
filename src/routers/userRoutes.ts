@@ -41,25 +41,25 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
-// Post One user
+// // Post One user
 
-router.post("/", async (req: Request, res: Response) => {
-  const { email, username } = req.body;
+// router.post("/", async (req: Request, res: Response) => {
+//   const { email, username } = req.body;
 
-  try {
-    const result = await prisma.user.create({
-      data: {
-        email,
-        username,
-        bio: "Hello.  Testing",
-      },
-    });
-    res.json(result).status(201);
-  } catch (err) {
-    console.log(err);
-    res.status(400).json("error for the username or email");
-  }
-});
+//   try {
+//     // const result = await prisma.user.create({
+//     //   data: {
+//     //     email,
+//     //     username,
+//     //     bio: "Hello.  Testing",
+//     //   },
+//     // });
+//     // res.json(result).status(201);
+//   } catch (err) {
+//     console.log(err);
+//     res.status(400).json("error for the username or email");
+//   }
+// });
 
 // Update User
 
