@@ -1,8 +1,10 @@
 import { PrismaClient } from "@prisma/client";
-import { Router } from "express";
+import { Request, Router } from "express";
 import moment from "moment";
 import { generateAuthToken } from "../helper/authHelper";
 import { sendEmailToken } from "../services/emailServices";
+import bcrypt from "bcrypt";
+import { generateUserAuthToken } from "../helper/userAuthHelper";
 
 const EMAIL_TOKEN_EXPIRATION_MINUTES = 10;
 const AUTHENTICATION_EXPIRATION_HOURS = 12;
@@ -25,24 +27,24 @@ router.post("/login", async (req, res) => {
   const expiration = moment().add(10, "m").toISOString();
 
   try {
-    const createdToken = await prisma.token.create({
-      data: {
-        type: "EMAIL",
-        emailToken,
-        expiration,
-        user: {
-          connectOrCreate: {
-            where: { email },
-            create: { email },
-          },
-        },
-      },
-    });
+    // const createdToken = await prisma.token.create({
+    //   data: {
+    //     type: "EMAIL",
+    //     emailToken,
+    //     expiration,
+    //     user: {
+    //       connectOrCreate: {
+    //         where: { email },
+    //         create: { email },
+    //       },
+    //     },
+    //   },
+    // });
 
-    // TODO send emailToken to user's email
-    //   await sendEmailToken(email, emailToken);
+    // // TODO send emailToken to user's email
+    // await sendEmailToken(email, emailToken);
 
-    await sendEmailToken(email, emailToken);
+    // await sendEmailToken(email, emailToken);
     res.status(200).send(`Email has been sent to ${email}`);
   } catch (err) {
     console.log(err);
@@ -103,6 +105,74 @@ router.post("/authenticate", async (req, res) => {
     const authToken = generateAuthToken(apiToken.tokenId);
 
     res.json({ authToken });
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+//Sign in with password
+
+router.post("/signin", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      res.status(400).send("Please provide email, passwords");
+    }
+
+    const findUser = await prisma.user.findUnique({
+      where: { email: email },
+      include: { UserAuths: true },
+    });
+
+    if (findUser && (await bcrypt.compare(password, findUser.UserAuths[0].hash))) {
+      const authToken = generateUserAuthToken(findUser.userId);
+      return res.status(200).cookie("token", authToken, { httpOnly: true }).json({
+        token: authToken,
+        user: findUser,
+      });
+    }
+
+    // console.log(findUser);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// Register
+router.post("/register", async (req: Request, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).send("Please provide email, passwords");
+    }
+
+    const findEmail = await prisma.userAuth.findUnique({
+      where: { email: email },
+    });
+
+    if (findEmail) {
+      return res.status(400).send("Email already exist");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        UserAuths: {
+          create: {
+            hash: hashedPassword,
+            email,
+          },
+        },
+      },
+      include: {
+        UserAuths: true,
+      },
+    });
+
+    res.json({ newUser });
   } catch (err) {
     console.log(err);
   }
