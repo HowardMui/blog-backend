@@ -13,7 +13,7 @@ app.use(cookieParser());
 app.use(express.json());
 
 app.use("/api/users", authenticateToken, userRouter);
-app.use("/api/tweets", authenticateToken, tweetRouter);
+app.use("/api/tweets", tweetRouter);
 app.use("/api/auths", authRouter);
 
 app.get("/", (req, res) => {
