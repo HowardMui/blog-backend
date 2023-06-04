@@ -10,23 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model Post {
-//   id        Int      @id @default(autoincrement())
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   title     String   @db.VarChar(255)
-//   content   String?
-//   published Boolean  @default(false)
-//   author    User     @relation(fields: [authorId], references: [id])
-//   authorId  Int
-// }
+enum AuthProvider {
+  PASSWORD
+  GOOGLE
+}
 
-// model Profile {
-//   id     Int     @id @default(autoincrement())
-//   bio    String?
-//   user   User    @relation(fields: [userId], references: [id])
-//   userId Int     @unique
-// }
+
 
 model Token {
   tokenId Int @id @default(autoincrement())
@@ -51,6 +40,20 @@ model User {
   isVerified Boolean @default(false)
   tweets Tweet[]
   token Token[]
+  UserAuths UserAuth[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime @default(now())
+}
+
+model UserAuth{
+  userAuthId Int @id @default(autoincrement())
+  email String @unique
+  hash String
+  provider AuthProvider @default(PASSWORD)
+  userId Int @unique
+  user User @relation(fields: [userId], references: [userId])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
