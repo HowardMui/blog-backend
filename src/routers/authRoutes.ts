@@ -132,8 +132,6 @@ router.post("/signin", async (req, res) => {
         user: findUser,
       });
     }
-
-    // console.log(findUser);
   } catch (err) {
     console.log(err);
   }
@@ -176,6 +174,12 @@ router.post("/register", async (req: Request, res) => {
   } catch (err) {
     console.log(err);
   }
+});
+
+//logout
+router.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.status(200).send("logout successfully");
 });
 
 export { router as authRouter };
