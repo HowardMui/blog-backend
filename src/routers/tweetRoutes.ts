@@ -1,17 +1,27 @@
 import { Request, Response, Router } from "express";
 import { PrismaClient, User } from "@prisma/client";
+import { authenticateToken } from "../middlewares/authMiddleware";
 
 const prisma = new PrismaClient();
 
 const router = Router();
 
 // Get All Tweet
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res) => {
   try {
     const findAllTweets = await prisma.tweet.findMany({
       include: {
         user: true,
-        likes: true,
+        likes: {
+          include: {
+            user: true,
+          },
+        },
+        comments: {
+          include: {
+            user: true,
+          },
+        },
         // select within include
         // user: {
         //   select: {
@@ -21,16 +31,15 @@ router.get("/", async (req, res) => {
       },
     });
 
-    const newfindAllTweets = findAllTweets.map((tweet) => {
-      const newObj = {
-        count: tweet.likes.length,
-        rows: tweet.likes,
-      };
+    // const mapComments = findAllTweets.map((tweet) => {
+    //   const mapObj = {
+    //     count: tweet.comments.length,
+    //     rows: tweet.comments,
+    //   };
+    //   return { ...tweet, comments: mapObj };
+    // });
 
-      return { ...tweet, likes: newObj };
-    });
-
-    res.status(200).json(newfindAllTweets);
+    res.status(200).json(findAllTweets);
   } catch (err) {
     console.log(err);
     res.status(400).json("Failed to get tweet data");
@@ -46,6 +55,16 @@ router.get("/:id", async (req: Request, res: Response) => {
       where: { tweetId: Number(id) },
       include: {
         user: true,
+        likes: {
+          include: {
+            user: true,
+          },
+        },
+        comments: {
+          include: {
+            user: true,
+          },
+        },
       },
     });
     if (!findOne) {
@@ -59,7 +78,7 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // Create one Tweet
-router.post("/", async (req: Request & { user?: User }, res: Response) => {
+router.post("/", authenticateToken, async (req: Request & { user?: User }, res: Response) => {
   const { image, content, impression } = req.body;
 
   const user = req.user;
@@ -83,7 +102,7 @@ router.post("/", async (req: Request & { user?: User }, res: Response) => {
 
 // Update Tweet
 
-router.put("/:id", async (req: Request, res: Response) => {
+router.put("/:id", authenticateToken, async (req: Request, res: Response) => {
   const { id } = req.params;
   const { image, content, impression } = req.body;
 
@@ -105,7 +124,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 
 // Delete Tweet
 
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete("/:id", authenticateToken, async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
