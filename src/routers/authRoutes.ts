@@ -127,7 +127,7 @@ router.post("/signin", async (req, res) => {
 
     if (findUser && (await bcrypt.compare(password, findUser.UserAuths[0].hash))) {
       const authToken = generateUserAuthToken(findUser.userId);
-      return res.status(200).cookie("token", authToken, { httpOnly: true }).json({
+      return res.status(200).cookie("token", authToken, { sameSite: "none", secure: true }).json({
         token: authToken,
         user: findUser,
       });
@@ -177,9 +177,9 @@ router.post("/register", async (req: Request, res) => {
 });
 
 //logout
-router.get("/logout", (req, res) => {
-  res.clearCookie("token");
-  res.status(200).send("logout successfully");
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", { sameSite: "none", secure: true });
+  res.status(200).json("logout successfully");
 });
 
 export { router as authRouter };
