@@ -1,10 +1,14 @@
 import { Request, Response, Router } from "express";
-import { PrismaClient, User } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { authenticateToken } from "../middlewares/authMiddleware";
 
 const prisma = new PrismaClient();
 
 const router = Router();
+
+interface ExpressRequest extends Request {
+  user?: any;
+}
 
 // Get All Tweet
 router.get("/", async (req: Request, res) => {
@@ -78,17 +82,17 @@ router.get("/:id", async (req: Request, res: Response) => {
 });
 
 // Create one Tweet
-router.post("/", authenticateToken, async (req: Request & { user?: User }, res: Response) => {
+router.post("/", authenticateToken, async (req: ExpressRequest, res: Response) => {
   const { image, content, impression } = req.body;
 
-  const user = req.user;
+  const user = req?.user;
 
   try {
     const params = {
       image,
       content,
       impression,
-      userId: user!.userId,
+      userId: user.userId,
     };
     const createRes = await prisma.tweet.create({
       data: params,
