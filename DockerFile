@@ -1,4 +1,4 @@
-FROM node:17
+FROM node:14-alpine
 
 # Create app directory
 WORKDIR /usr/app
@@ -10,8 +10,10 @@ RUN npm install
 
 COPY . .
 
+RUN npx prisma generate
+
 RUN npm run build
 
 EXPOSE 8000
 
-CMD ["node", "build/index.js"]
+CMD ["npm", "start"]

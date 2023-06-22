@@ -4,14 +4,21 @@ import { tweetRouter } from "./routers/tweetRoutes";
 import swaggerDocs from "./utils/swagger";
 import { authRouter } from "./routers/authRoutes";
 import { authenticateToken } from "./middlewares/authMiddleware";
-var cors = require("cors");
+import cors from "cors";
 import cookieParser from "cookie-parser";
 
 const app = express();
 app.use(cookieParser());
 // app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 // app.use(cors({ credentials: true, origin: "*" }));
-// app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: function (origin, callback) {
+      callback(null, true);
+    },
+  })
+);
 app.use(express.json());
 
 app.use("/users", authenticateToken, userRouter);

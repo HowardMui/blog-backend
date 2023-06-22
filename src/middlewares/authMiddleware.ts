@@ -2,14 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET } from "../config";
 import moment from "moment";
-import { PrismaClient, User } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { UserJWTAuth } from "../Model";
 
-type AuthRequest = Request & { user?: User };
+// type AuthRequest = Request & { user?: User };
 
 const prisma = new PrismaClient();
 
-export const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = async (req: Request, res: Response, next: NextFunction) => {
   const userToken = req.cookies["token"];
 
   // const authHeader = req.headers["authorization"];
@@ -32,15 +32,13 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
     return res.sendStatus(401);
   }
 
-  // console.log(newJWT);
-
   try {
     const payload = (await jwt.verify(userToken, JWT_SECRET)) as UserJWTAuth;
 
     const exp = moment(payload.exp! * 1000).toISOString();
 
     if (!payload.userId) {
-      return res.status(401).json({ error: "UnAuthorized" });
+      return res.status(401).json({ error: "UnAuthorized, please try again" });
     } else if (!moment(exp).isAfter(moment().toISOString())) {
       return res.status(401).json({ error: "API token expired" });
     }
